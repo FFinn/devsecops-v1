@@ -1,0 +1,7 @@
+timestamp_utc=2026-09-07T09:54:59.231469+00:00
+report=security-reports/sast-report.json
+policy=block severities ERROR
+findings_total=0
+findings_blocking=0
+decision=PASS
+next_action=Continue pipeline; non-blocking findings remain subject to triage.

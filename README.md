@@ -6,13 +6,13 @@ GitLab CI/CD security pipeline, в котором результаты скан�
 
 ## Проверка / Mentor
 
-После финального локального прогона заполните две ссылки и добавьте реальный
-скриншот pipeline. Остальные пути уже фиксированы пайплайном.
+Ниже собраны основные результаты локального GitLab-прогона на стенде
+`http://localhost:8081`.
 
 | Что | Где |
 |---|---|
-| Зелёный pipeline | `<добавить ссылку после локального запуска GitLab>` |
-| Красный pipeline | `<добавить ссылку после локального запуска GitLab>` |
+| Зелёный pipeline | `http://localhost:8081/root/devsecops-v1/-/pipelines/5` |
+| Красный pipeline | `http://localhost:8081/root/devsecops-v1/-/pipelines/6` |
 | DAST target | `https://preview.owasp-juice.shop/` |
 | SAST отчёт | `security-reports/sast-report.json` |
 | SCA отчёт | `security-reports/sca-report.json` |
@@ -22,14 +22,15 @@ GitLab CI/CD security pipeline, в котором результаты скан�
 | SAST gate log | `artifacts/ci/gate-sast.log` |
 | SCA gate log | `artifacts/ci/gate-sca.log` |
 | DAST policy log | `artifacts/ci/gate-dast.log` |
+| Красный SAST gate log | `artifacts/ci/gate-sast-red.log` |
 | ZAP log | `artifacts/ci/zap-baseline-log.txt` |
 | Автоматический triage | `artifacts/ci/triage.md` |
 | Скриншот | `artifacts/screenshots/pipeline.png` |
 
-> Отчёты и логи генерируются CI и сохраняются как GitLab job artifacts.
-> После финальных прогонов их можно скачать из `publish_security_bundle`,
-> распаковать в эти же каталоги и закоммитить вместе со скриншотом, если
-> преподаватель требует физическое наличие результатов в Git-репозитории.
+> Отчёты и логи сгенерированы CI и сохранены как GitLab job artifacts.
+> Artifact зелёного `publish_security_bundle` распакован в эти же каталоги,
+> красный `gate-sast-red.log` взят из artifact job `gate_sast` красного
+> pipeline.
 
 ## 1. Структура проекта
 
@@ -292,18 +293,15 @@ artifacts/ci/
 
 ## 11. Что осталось сделать перед сдачей
 
-После переноса проекта в локальный GitLab:
+Перед сдачей проверьте, что локальные ссылки открываются на вашей машине:
 
-1. зарегистрировать Docker executor runner с тегом `docker`;
-2. выполнить зелёный pipeline;
-3. выполнить `red-sast` pipeline;
-4. скачать artifacts обоих прогонов;
-5. добавить реальные ссылки на pipelines в таблицу **Проверка / Mentor**;
-6. сделать скриншот графа/списка jobs и сохранить как
-   `artifacts/screenshots/pipeline.png`;
-7. при требовании преподавателя к физическим файлам в Git — распаковать
-   artifact `publish_security_bundle` в корень репозитория и закоммитить
-   реальные `security-reports/` и `artifacts/ci/`.
+1. зелёный pipeline `#5` имеет статус `passed`;
+2. красный pipeline `#6` имеет статус `failed`;
+3. `artifacts/ci/gate-sast-red.log` содержит `decision=BLOCK`;
+4. `artifacts/screenshots/pipeline.png` показывает зелёный pipeline.
+
+Если проект переносится в другой GitLab, повторите два pipeline и обновите
+ссылки в таблице **Проверка / Mentor**.
 
 ## Используемые инструменты
 

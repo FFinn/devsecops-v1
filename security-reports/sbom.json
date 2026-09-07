@@ -1,0 +1,119 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.7",
+  "serialNumber": "urn:uuid:4935a348-8f14-4c7d-a0e6-d8d43159cb82",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-09-07T09:54:54+00:00",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "manufacturer": {
+            "name": "Aqua Security Software Ltd."
+          },
+          "group": "aquasecurity",
+          "name": "trivy",
+          "version": "0.74.0"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "493ffc40-6a30-411b-90ee-a0ee61b36e72",
+      "type": "application",
+      "name": ".",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:SchemaVersion",
+          "value": "2"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "7a728b3c-feda-4228-ba4b-fa5f57dae259",
+      "type": "application",
+      "name": "requirements.txt",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:Class",
+          "value": "lang-pkgs"
+        },
+        {
+          "name": "aquasecurity:trivy:Type",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/flask@3.1.3",
+      "type": "library",
+      "name": "Flask",
+      "version": "3.1.3",
+      "purl": "pkg:pypi/flask@3.1.3",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/pyyaml@6.0.3",
+      "type": "library",
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "purl": "pkg:pypi/pyyaml@6.0.3",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    },
+    {
+      "bom-ref": "pkg:pypi/requests@2.34.2",
+      "type": "library",
+      "name": "requests",
+      "version": "2.34.2",
+      "purl": "pkg:pypi/requests@2.34.2",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "pip"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "493ffc40-6a30-411b-90ee-a0ee61b36e72",
+      "dependsOn": [
+        "7a728b3c-feda-4228-ba4b-fa5f57dae259"
+      ]
+    },
+    {
+      "ref": "7a728b3c-feda-4228-ba4b-fa5f57dae259",
+      "dependsOn": [
+        "pkg:pypi/flask@3.1.3",
+        "pkg:pypi/pyyaml@6.0.3",
+        "pkg:pypi/requests@2.34.2"
+      ]
+    },
+    {
+      "ref": "pkg:pypi/flask@3.1.3",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/pyyaml@6.0.3",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/requests@2.34.2",
+      "dependsOn": []
+    }
+  ],
+  "vulnerabilities": []
+}

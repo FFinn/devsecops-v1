@@ -1,0 +1,19 @@
+Security pipeline bundle
+commit=26f55abe50a80b0429a070779a8fb3262b6093b5
+ref=main
+pipeline=http://localhost:8081/root/devsecops-v1/-/pipelines/5
+scenario=green
+dast_target=https://preview.owasp-juice.shop/
+
+Reports:
+security-reports/README.md
+security-reports/dast-report.html
+security-reports/dast-report.json
+security-reports/sast-report.json
+security-reports/sbom.json
+security-reports/sca-report.json
+
+Gate logs:
+artifacts/ci/gate-dast.log
+artifacts/ci/gate-sast.log
+artifacts/ci/gate-sca.log

@@ -10,6 +10,7 @@ venv/
 # Scanner caches / temporary demo input
 .trivycache/
 .sca-demo/
+.gitlab-builds/
 
 # IDE / OS
 .idea/

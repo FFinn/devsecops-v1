@@ -113,6 +113,21 @@ executor = "docker"
 контейнер ZAP с mount `/zap/wrk`. `/builds:/builds` нужен, чтобы sibling
 контейнер ZAP видел тот же checkout проекта, что и GitLab job.
 
+Если Docker Desktop на macOS отказывается монтировать `/builds`, используйте
+build directory внутри расшаренного пути `/Users`. Пример:
+
+```toml
+builds_dir = "/Users/<user>/PycharmProjects/devsecops-v1/.gitlab-builds"
+
+[runners.docker]
+  image = "alpine:3.22"
+  volumes = [
+    "/cache",
+    "/var/run/docker.sock:/var/run/docker.sock",
+    "/Users/<user>/PycharmProjects/devsecops-v1/.gitlab-builds:/Users/<user>/PycharmProjects/devsecops-v1/.gitlab-builds"
+  ]
+```
+
 Перезапустите runner:
 
 ```bash

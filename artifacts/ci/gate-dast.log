@@ -1,0 +1,4 @@
+policy=ZAP baseline findings are triaged; WARN findings are non-blocking
+blocking=explicit ZAP FAIL result, scanner execution failure, or missing required report
+zap_exit_code=0
+decision=PASS_TO_TRIAGE

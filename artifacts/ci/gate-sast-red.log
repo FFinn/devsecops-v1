@@ -1,0 +1,9 @@
+timestamp_utc=2026-09-07T09:57:27.476832+00:00
+report=security-reports/sast-report.json
+policy=block severities ERROR
+findings_total=2
+findings_blocking=2
+blocked_finding=security.python-sql-query-concat security-fixtures/red-sast/database.py:11 severity=ERROR message=Potential SQL injection: a SQL query is assembled with string concatenation. Use a parameterized query.
+blocked_finding=security.python-sql-query-fstring security-fixtures/red-sast/database.py:22 severity=ERROR message=Potential SQL injection: a SQL query is assembled with an f-string. Use a parameterized query.
+decision=BLOCK
+next_action=Fix or formally approve a time-bounded exception, then rerun the pipeline.
