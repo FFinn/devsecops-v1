@@ -4,12 +4,19 @@
 локального воспроизводимого стенда, на котором можно показать зелёный и
 красный GitLab pipeline и снять доказательства для преподавателя.
 
-Используется GitLab CE `18.1.6` — последний найденный patch-релиз ветки 18.1.
+Используется GitLab CE `18.1.6` — последний patch-релиз ветки 18.1. Эта ветка уже устарела, поэтому стенд предназначен только для локальной учебной работы и не должен публиковаться в интернет.
+
 Pipeline требует runner с **Docker executor** и тегом `docker`.
 
 ## 1. Запуск GitLab
 
-Из корня репозитория:
+Сначала добавьте локальное имя в `/etc/hosts` на macOS:
+
+```bash
+grep -q 'gitlab.local' /etc/hosts || echo '127.0.0.1 gitlab.local' | sudo tee -a /etc/hosts
+```
+
+Затем из корня репозитория:
 
 ```bash
 docker compose -f local-gitlab/docker-compose.yml up -d
@@ -27,7 +34,7 @@ docker logs -f devsecops-gitlab
 Откройте:
 
 ```text
-http://localhost:8080
+http://gitlab.local:8080
 ```
 
 Начальный пароль `root`:
@@ -44,7 +51,7 @@ docker exec devsecops-gitlab \
 Затем добавьте локальный GitLab как remote и отправьте текущий репозиторий:
 
 ```bash
-git remote add local-gitlab http://localhost:8080/root/devsecops-v1.git
+git remote add local-gitlab http://gitlab.local:8080/root/devsecops-v1.git
 git push -u local-gitlab main
 ```
 

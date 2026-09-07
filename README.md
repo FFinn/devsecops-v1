@@ -307,7 +307,7 @@ artifacts/ci/
 
 ## Используемые инструменты
 
-- Semgrep Community Edition — `semgrep/semgrep`
+- Semgrep Community Edition — `semgrep/semgrep:1.172.0`
 - Trivy — `aquasec/trivy:0.74.0`
 - OWASP ZAP — `ghcr.io/zaproxy/zaproxy:stable`
 - GitLab CI/CD с Docker executor runner
