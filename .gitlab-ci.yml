@@ -52,7 +52,7 @@ sast_semgrep:
       if [ "$SECURITY_DEMO_SCENARIO" = "red-sast" ]; then
         SAST_TARGET="security-fixtures/red-sast"
       fi
-      echo "SAST target: $SAST_TARGET"
+      echo "Цель SAST: $SAST_TARGET"
       semgrep scan \
         --config security/semgrep.yml \
         --json \
@@ -87,7 +87,7 @@ sca_trivy:
         SCA_TARGET=".sca-demo"
         SKIP_ARGS=""
       fi
-      echo "SCA target: $SCA_TARGET"
+      echo "Цель SCA: $SCA_TARGET"
       trivy fs \
         --scanners vuln \
         $SKIP_ARGS \
@@ -134,13 +134,14 @@ gate_sca:
     - job: sca_trivy
       artifacts: true
   script:
-    - python3 scripts/gate_sca.py security-reports/sca-report.json artifacts/ci/gate-sca.log
+    - python3 scripts/gate_sca.py security-reports/sca-report.json artifacts/ci/gate-sca.log artifacts/ci/triage-sca.md
   allow_failure: false
   artifacts:
     when: always
     expire_in: 30 days
     paths:
       - artifacts/ci/gate-sca.log
+      - artifacts/ci/triage-sca.md
 
 deploy_test:
   extends: .dast_context_rules
@@ -154,7 +155,7 @@ deploy_test:
     - |
       {
         echo "DAST_TARGET=$DAST_TARGET"
-        echo "Checking external test/stage target..."
+        echo "Проверка доступности учебной цели DAST..."
         curl \
           --fail \
           --silent \
@@ -202,30 +203,30 @@ dast_zap_baseline:
       cat artifacts/ci/zap-baseline-log.txt
 
       {
-        echo "policy=ZAP baseline findings are triaged; WARN findings are non-blocking"
-        echo "blocking=explicit ZAP FAIL result, scanner execution failure, or missing required report"
-        echo "zap_exit_code=$ZAP_EXIT"
+        echo "политика=предупреждения базового сканирования OWASP ZAP передаются на первичный разбор и сами по себе не блокируют конвейер"
+        echo "условие_блокировки=явный результат FAIL, техническая ошибка сканера или отсутствие обязательного отчёта"
+        echo "код_завершения_zap=$ZAP_EXIT"
       } > artifacts/ci/gate-dast.log
 
       if [ ! -s security-reports/dast-report.html ]; then
-        echo "decision=BLOCK" >> artifacts/ci/gate-dast.log
-        echo "reason=required DAST HTML report is missing" >> artifacts/ci/gate-dast.log
+        echo "решение=БЛОКИРОВАТЬ" >> artifacts/ci/gate-dast.log
+        echo "причина=обязательный HTML-отчёт DAST отсутствует" >> artifacts/ci/gate-dast.log
         exit 3
       fi
 
       case "$ZAP_EXIT" in
         0|2)
-          echo "decision=PASS_TO_TRIAGE" >> artifacts/ci/gate-dast.log
+          echo "решение=ПЕРЕДАТЬ_НА_РАЗБОР" >> artifacts/ci/gate-dast.log
           exit 0
           ;;
         1)
-          echo "decision=BLOCK" >> artifacts/ci/gate-dast.log
-          echo "reason=at least one ZAP rule is explicitly configured as FAIL" >> artifacts/ci/gate-dast.log
+          echo "решение=БЛОКИРОВАТЬ" >> artifacts/ci/gate-dast.log
+          echo "причина=как минимум одно правило OWASP ZAP явно настроено как FAIL" >> artifacts/ci/gate-dast.log
           exit 1
           ;;
         *)
-          echo "decision=BLOCK" >> artifacts/ci/gate-dast.log
-          echo "reason=ZAP execution failure" >> artifacts/ci/gate-dast.log
+          echo "решение=БЛОКИРОВАТЬ" >> artifacts/ci/gate-dast.log
+          echo "причина=техническая ошибка выполнения OWASP ZAP" >> artifacts/ci/gate-dast.log
           exit "$ZAP_EXIT"
           ;;
       esac
@@ -263,6 +264,7 @@ publish_security_bundle:
         security-reports/dast-report.json \
         artifacts/ci/gate-sast.log \
         artifacts/ci/gate-sca.log \
+        artifacts/ci/triage-sca.md \
         artifacts/ci/gate-dast.log \
         artifacts/ci/zap-baseline-log.txt
       do
@@ -271,17 +273,17 @@ publish_security_bundle:
     - python3 scripts/generate_triage.py
     - |
       {
-        echo "Security pipeline bundle"
-        echo "commit=$CI_COMMIT_SHA"
-        echo "ref=$CI_COMMIT_REF_NAME"
-        echo "pipeline=$CI_PIPELINE_URL"
-        echo "scenario=$SECURITY_DEMO_SCENARIO"
-        echo "dast_target=$DAST_TARGET"
+        echo "Набор результатов конвейера безопасности"
+        echo "коммит=$CI_COMMIT_SHA"
+        echo "ветка=$CI_COMMIT_REF_NAME"
+        echo "прогон=$CI_PIPELINE_URL"
+        echo "сценарий=$SECURITY_DEMO_SCENARIO"
+        echo "цель_dast=$DAST_TARGET"
         echo
-        echo "Reports:"
+        echo "Отчёты:"
         find security-reports -maxdepth 1 -type f -print | sort
         echo
-        echo "Gate logs:"
+        echo "Журналы контрольных точек:"
         find artifacts/ci -maxdepth 1 -name 'gate-*.log' -type f -print | sort
       } | tee artifacts/ci/security-bundle.txt
   artifacts:

@@ -1,4 +1,4 @@
-policy=ZAP baseline findings are triaged; WARN findings are non-blocking
-blocking=explicit ZAP FAIL result, scanner execution failure, or missing required report
-zap_exit_code=0
-decision=PASS_TO_TRIAGE
+политика=предупреждения базового сканирования OWASP ZAP передаются на первичный разбор и сами по себе не блокируют конвейер
+условие_блокировки=явный результат FAIL, техническая ошибка сканера или отсутствие обязательного отчёта
+код_завершения_zap=0
+решение=ПЕРЕДАТЬ_НА_РАЗБОР

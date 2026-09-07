@@ -1,43 +1,41 @@
-# Локальный GitLab 18.1 для финальных скриншотов
+# Локальный GitLab 18.1 для итоговой проверки
 
-Этот compose-файл не участвует в учебном pipeline. Он нужен только для
-локального воспроизводимого стенда, на котором можно показать зелёный и
-красный GitLab pipeline и снять доказательства для преподавателя.
+Этот каталог не участвует в работе учебного приложения. Он нужен только для локального стенда, на котором можно запустить GitLab CI/CD, показать успешный и заблокированный прогоны и сделать скриншоты для преподавателя.
 
-Используется GitLab CE `18.1.6` — последний patch-релиз ветки 18.1. Эта ветка уже устарела, поэтому стенд предназначен только для локальной учебной работы и не должен публиковаться в интернет.
+Используется GitLab CE `18.1.6`. Ветка 18.1 уже устарела, поэтому стенд предназначен только для локальной учебной работы и не должен быть доступен из интернета.
 
-Pipeline требует runner с **Docker executor** и тегом `docker`.
+Для заданий CI/CD нужен GitLab Runner с исполнителем Docker и меткой `docker`.
 
 ## 1. Запуск GitLab
 
-Сначала добавьте локальное имя в `/etc/hosts` на macOS:
+На macOS сначала добавьте локальное имя в `/etc/hosts`:
 
 ```bash
 grep -q 'gitlab.local' /etc/hosts || echo '127.0.0.1 gitlab.local' | sudo tee -a /etc/hosts
 ```
 
-Затем из корня репозитория:
+Затем из корня репозитория запустите:
 
 ```bash
 docker compose -f local-gitlab/docker-compose.yml up -d
 ```
 
-Первый старт GitLab может занять несколько минут.
+Первый запуск GitLab может занять несколько минут.
 
-Проверка:
+Проверить состояние контейнеров можно так:
 
 ```bash
 docker compose -f local-gitlab/docker-compose.yml ps
 docker logs -f devsecops-gitlab
 ```
 
-Откройте:
+После запуска откройте:
 
 ```text
 http://gitlab.local:8080
 ```
 
-Начальный пароль `root`:
+Начальный пароль пользователя `root` можно получить командой:
 
 ```bash
 docker exec devsecops-gitlab \
@@ -46,32 +44,32 @@ docker exec devsecops-gitlab \
 
 ## 2. Создание проекта
 
-В GitLab создайте пустой проект `devsecops-v1`.
+Создайте в GitLab пустой проект `devsecops-v1`.
 
-Затем добавьте локальный GitLab как remote и отправьте текущий репозиторий:
+Добавьте локальный GitLab как дополнительный удалённый репозиторий и отправьте ветку `main`:
 
 ```bash
 git remote add local-gitlab http://gitlab.local:8080/root/devsecops-v1.git
 git push -u local-gitlab main
 ```
 
-Если проект создаётся не в namespace `root`, замените URL.
+Если проект создан не в пространстве имён `root`, скорректируйте адрес.
 
-## 3. Создание Docker runner
+## 3. Создание GitLab Runner
 
-В проекте GitLab:
+В интерфейсе GitLab откройте:
 
 `Settings → CI/CD → Runners → Create project runner`
 
-Задайте tag:
+Задайте метку:
 
 ```text
 docker
 ```
 
-Скопируйте выданный runner authentication token (`glrt-...`).
+Скопируйте выданный токен регистрации вида `glrt-...`.
 
-Затем зарегистрируйте runner:
+Затем зарегистрируйте GitLab Runner:
 
 ```bash
 docker compose -f local-gitlab/docker-compose.yml exec gitlab-runner \
@@ -95,11 +93,9 @@ local-gitlab/runner-config/config.toml
 clone_url = "http://host.docker.internal:8080"
 ```
 
-Для Docker Desktop на macOS это позволяет job-контейнерам клонировать
-репозиторий через host port `8080`, потому что URL `localhost:8080` внутри
-job-контейнера указывал бы на сам job-контейнер.
+На Docker Desktop для macOS это позволяет контейнерам заданий CI/CD клонировать репозиторий через порт хоста `8080`. Адрес `localhost:8080` внутри такого контейнера указывал бы на сам контейнер, а не на GitLab.
 
-Убедитесь, что executor выглядит примерно так:
+Проверьте, что настройка исполнителя выглядит примерно так:
 
 ```toml
 executor = "docker"
@@ -109,12 +105,9 @@ executor = "docker"
   volumes = ["/cache", "/var/run/docker.sock:/var/run/docker.sock", "/builds:/builds"]
 ```
 
-`/var/run/docker.sock` нужен job `dast_zap_baseline`: он запускает официальный
-контейнер ZAP с mount `/zap/wrk`. `/builds:/builds` нужен, чтобы sibling
-контейнер ZAP видел тот же checkout проекта, что и GitLab job.
+Сокет `/var/run/docker.sock` нужен заданию `dast_zap_baseline`: оно запускает официальный контейнер OWASP ZAP. Каталог `/builds` нужен, чтобы контейнер ZAP видел ту же рабочую копию проекта, что и контейнер задания GitLab CI/CD.
 
-Если Docker Desktop на macOS отказывается монтировать `/builds`, используйте
-build directory внутри расшаренного пути `/Users`. Пример:
+Если Docker Desktop на macOS не разрешает подключить `/builds`, укажите рабочий каталог внутри `/Users`. Например:
 
 ```toml
 builds_dir = "/Users/<user>/PycharmProjects/devsecops-v1/.gitlab-builds"
@@ -128,76 +121,96 @@ builds_dir = "/Users/<user>/PycharmProjects/devsecops-v1/.gitlab-builds"
   ]
 ```
 
-Перезапустите runner:
+После изменения конфигурации перезапустите GitLab Runner:
 
 ```bash
 docker compose -f local-gitlab/docker-compose.yml restart gitlab-runner
 ```
 
-В GitLab runner должен стать `online`.
+В интерфейсе GitLab он должен перейти в состояние `online`.
 
-## 4. Зелёный pipeline
+## 4. Успешный прогон
+
+Откройте:
 
 `Build → Pipelines → New pipeline`
 
-Переменная:
+Добавьте переменную:
 
 ```text
 SECURITY_DEMO_SCENARIO=green
 ```
 
-`RUN_DAST=true` уже задано по умолчанию.
+`RUN_DAST=true` уже задано в `.gitlab-ci.yml`.
 
-Сохраните:
+После завершения сохраните:
 
-- URL pipeline;
-- artifact `publish_security_bundle`;
-- скриншот зелёного графа/jobs.
+1. адрес прогона;
+2. артефакт задания `publish_security_bundle`;
+3. скриншот успешного графа заданий CI/CD.
 
-## 5. Красный pipeline
+## 5. Заблокированный прогон SAST
 
-Запустите новый pipeline с:
+Запустите новый прогон с переменной:
 
 ```text
 SECURITY_DEMO_SCENARIO=red-sast
 ```
 
-Ожидаемо:
+Ожидаемый результат:
 
-- `sast_semgrep` создаёт SAST JSON;
-- `sca_trivy` создаёт SCA report + SBOM;
-- `gate_sast` завершается ошибкой;
-- `gate-sast.log` содержит `decision=BLOCK`;
-- последующие deploy/DAST стадии не выполняются.
+1. `sast_semgrep` создаёт отчёт SAST в JSON;
+2. `sca_trivy` создаёт отчёт SCA и SBOM;
+3. `gate_sast` находит блокирующие записи уровня `ERROR` и завершается ошибкой;
+4. в `gate-sast.log` появляется `решение=БЛОКИРОВАТЬ`;
+5. этапы проверки цели DAST и динамического сканирования не выполняются.
 
-Сохраните URL и скриншот красного pipeline.
+Сохраните адрес прогона и скриншот.
 
-## 6. Финальная фиксация evidence
+## 6. Заблокированный прогон SCA
 
-Из зелёного `publish_security_bundle` скачайте artifact и перенесите его
-содержимое в корень репозитория с сохранением путей:
+Чтобы получить фактические находки Trivy для первичного разбора SCA, запустите:
+
+```text
+SECURITY_DEMO_SCENARIO=red-sca
+```
+
+Ожидаемый результат:
+
+1. Trivy анализирует учебный файл с устаревшими зависимостями;
+2. сохраняется настоящий `sca-report.json`;
+3. `gate_sca` формирует `gate-sca.log` и `triage-sca.md`;
+4. при наличии `HIGH` или `CRITICAL` дальнейшее выполнение блокируется.
+
+Скачайте артефакты `sca_trivy` и `gate_sca`. Они нужны для подтверждения SCA-разбора в итоговой работе.
+
+## 7. Сохранение материалов для проверки
+
+После новых прогонов перенесите содержимое артефактов в репозиторий с сохранением путей:
 
 ```text
 security-reports/
 artifacts/ci/
 ```
 
-Сохраните скриншот как:
+Скриншоты сохраните отдельно:
 
 ```text
-artifacts/screenshots/pipeline.png
+artifacts/screenshots/pipeline-green.png
+artifacts/screenshots/pipeline-red.png
 ```
 
-После этого обновите таблицу `Проверка / Mentor` в корневом `README.md` и
-сделайте финальный commit.
+После этого обновите раздел «Материалы для проверки» в корневом `README.md` и сделайте итоговый коммит.
 
-## Остановка
+## 8. Остановка локального стенда
+
+Остановить контейнеры:
 
 ```bash
 docker compose -f local-gitlab/docker-compose.yml down
 ```
 
-Чтобы удалить также данные GitLab:
+Удалить контейнеры вместе с данными GitLab:
 
 ```bash
 docker compose -f local-gitlab/docker-compose.yml down -v

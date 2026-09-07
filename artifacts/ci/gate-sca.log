@@ -1,7 +1,7 @@
-timestamp_utc=2026-09-07T09:55:03.384287+00:00
-report=security-reports/sca-report.json
-policy=block severities CRITICAL,HIGH
-vulnerabilities_total=0
-vulnerabilities_blocking=0
-decision=PASS
-next_action=Continue pipeline; lower-severity findings remain subject to triage.
+время_utc=2026-09-07T09:55:03.384287+00:00
+отчёт=security-reports/sca-report.json
+политика=блокировать уровни CRITICAL,HIGH
+всего_уязвимостей=0
+блокирующих_уязвимостей=0
+решение=ПРОПУСТИТЬ
+следующее_действие=Продолжить конвейер; неблокирующие уязвимости при наличии остаются предметом первичного разбора.

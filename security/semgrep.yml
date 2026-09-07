@@ -4,12 +4,12 @@ rules:
       - python
     severity: ERROR
     message: >-
-      Potential SQL injection: a SQL query is assembled with string
-      concatenation. Use a parameterized query.
+      Возможная SQL-инъекция: SQL-запрос формируется конкатенацией строк.
+      Используйте параметризованный запрос.
     metadata:
       category: security
       cwe:
-        - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+        - "CWE-89"
       technology:
         - python
         - sqlite
@@ -21,12 +21,12 @@ rules:
       - python
     severity: ERROR
     message: >-
-      Potential SQL injection: a SQL query is assembled with an f-string.
-      Use a parameterized query.
+      Возможная SQL-инъекция: SQL-запрос формируется с помощью f-строки.
+      Используйте параметризованный запрос.
     metadata:
       category: security
       cwe:
-        - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+        - "CWE-89"
       technology:
         - python
         - sqlite

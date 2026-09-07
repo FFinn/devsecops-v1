@@ -1,14 +1,15 @@
-# CI evidence
+# Журналы и сводки CI/CD
 
-GitLab CI writes operational evidence here:
+Здесь хранятся дополнительные материалы, по которым можно понять, почему конвейер был пропущен или заблокирован:
 
-- `gate-sast.log`
-- `gate-sca.log`
-- `gate-dast.log`
-- `zap-baseline-log.txt`
-- tool version logs
-- `triage.md`
-- `security-bundle.txt`
+1. `gate-sast.log` — решение контрольной точки SAST;
+2. `gate-sca.log` — решение контрольной точки SCA;
+3. `gate-dast.log` — решение по результату базового сканирования DAST;
+4. `gate-sast-red.log` — сохранённый журнал заблокированного SAST-прогона;
+5. `triage-sca.md` — первичный разбор фактических SCA-находок;
+6. `triage.md` — общий первичный разбор результатов;
+7. `zap-baseline-log.txt` — исходный журнал OWASP ZAP;
+8. `security-bundle.txt` — сводка собранных артефактов;
+9. файлы с версиями Semgrep и Trivy.
 
-Real files are produced by pipeline jobs and uploaded with
-`artifacts: when: always`.
+Файлы создаются заданиями GitLab CI/CD и публикуются с `artifacts: when: always`, поэтому журналы контрольных точек сохраняются даже при блокировке конвейера.

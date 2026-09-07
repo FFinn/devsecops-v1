@@ -1,7 +1,10 @@
-# Screenshots
+# Скриншоты прогонов GitLab CI/CD
 
-After the final local GitLab runs, save the real pipeline screenshot as:
+Для итоговой проверки нужны два настоящих скриншота из локального GitLab:
 
-`artifacts/screenshots/pipeline.png`
+1. `pipeline-green.png` — успешный прогон;
+2. `pipeline-red.png` — прогон, заблокированный контрольной точкой SAST.
 
-Do not use a mocked or manually constructed screenshot.
+Текущий `pipeline.png` был сохранён во время предыдущего успешного запуска и оставлен как подтверждающий материал. После повторного запуска текущей версии проекта лучше заменить его двумя файлами из списка выше.
+
+Скриншоты не нужно рисовать или собирать вручную: на них должен быть реальный интерфейс GitLab с состоянием заданий CI/CD.

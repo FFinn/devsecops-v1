@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate a small, preliminary triage summary from SAST/SCA/DAST reports.
+"""Формирует краткий первичный разбор по отчётам SAST, SCA и DAST.
 
-This helper is intentionally simple: it does not replace human triage. It
-makes the CI artifact easier to review and documents the first decision.
+Сводка помогает быстро посмотреть результаты одного прогона, но не заменяет
+ручную проверку находок специалистом.
 """
 
 from __future__ import annotations
@@ -14,6 +14,26 @@ from typing import Any
 
 REPORTS = Path("security-reports")
 OUTPUT = Path("artifacts/ci/triage.md")
+
+DAST_NAMES_RU = {
+    "Content Security Policy (CSP) Header Not Set": "Не задан заголовок Content-Security-Policy (CSP)",
+    "Cross-Domain Misconfiguration": "Ошибочная междоменная конфигурация",
+    "Cross-Origin-Embedder-Policy Header Missing or Invalid": "Заголовок Cross-Origin-Embedder-Policy отсутствует или задан неверно",
+    "Cross-Origin-Opener-Policy Header Missing or Invalid": "Заголовок Cross-Origin-Opener-Policy отсутствует или задан неверно",
+    "Dangerous JS Functions": "Используются потенциально опасные функции JavaScript",
+    "Deprecated Feature Policy Header Set": "Используется устаревший заголовок Feature-Policy",
+    "Permissions Policy Header Not Set": "Не задан заголовок Permissions-Policy",
+    'Server Leaks Version Information via "Server" HTTP Response Header Field': "Сервер раскрывает версию через HTTP-заголовок Server",
+    "Strict-Transport-Security Header Not Set": "Не задан заголовок Strict-Transport-Security",
+    "Timestamp Disclosure - Unix": "Раскрывается временная метка Unix",
+    "Modern Web Application": "Обнаружено современное веб-приложение",
+    "Re-examine Cache-control Directives": "Нужно проверить директивы Cache-Control",
+    "Storable and Cacheable Content": "Содержимое можно сохранять и кэшировать",
+    "Storable but Non-Cacheable Content": "Содержимое можно сохранять, но оно не кэшируется",
+    "Cookie No HttpOnly Flag": "У cookie не установлен флаг HttpOnly",
+    "Cookie Secure Flag Not Set": "У cookie не установлен флаг Secure",
+    "X-Frame-Options Header Not Set": "Не задан заголовок X-Frame-Options",
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -37,13 +57,13 @@ def sast_rows() -> list[list[str]]:
         severity = str(extra.get("severity", "UNKNOWN")).upper()
         if severity == "ERROR":
             strategy = "Fix"
-            reason = "Blocking SAST finding; fix before merge/release."
+            reason = "Блокирующая SAST-находка: исправить до слияния или выпуска."
         elif severity == "WARNING":
             strategy = "Backlog"
-            reason = "Non-blocking SAST finding; confirm context and plan remediation."
+            reason = "Находка не блокирует выпуск: проверить контекст и запланировать исправление."
         else:
             strategy = "Monitor"
-            reason = "Low-priority signal; retain for review."
+            reason = "Низкоприоритетный сигнал: сохранить для повторной проверки."
 
         start = item.get("start") or {}
         location = f"{item.get('path', '?')}:{start.get('line', '?')}"
@@ -70,16 +90,16 @@ def sca_rows() -> list[list[str]]:
             fixed = vuln.get("FixedVersion") or ""
             if severity in {"CRITICAL", "HIGH"} and fixed:
                 strategy = "Fix"
-                reason = f"High risk and a fixed version is available: {fixed}."
+                reason = f"Риск высокий, исправленная версия доступна: {fixed}."
             elif severity in {"CRITICAL", "HIGH"}:
                 strategy = "Monitor"
-                reason = "High risk but no fixed version is listed; track vendor update and apply compensating controls."
+                reason = "Риск высокий, но исправленная версия не указана: нужны компенсирующие меры и наблюдение за обновлениями."
             elif severity == "MEDIUM":
                 strategy = "Backlog"
-                reason = "Plan remediation after checking reachability and production context."
+                reason = "Запланировать исправление после проверки достижимости и контекста использования в рабочем контуре."
             else:
                 strategy = "Monitor"
-                reason = "Lower-priority dependency risk; monitor and reassess on new data."
+                reason = "Низкоприоритетный риск зависимости: наблюдать и пересмотреть при появлении новых данных."
 
             finding = f"{vuln.get('PkgName', '?')} / {vuln.get('VulnerabilityID', '?')}"
             rows.append(
@@ -102,12 +122,14 @@ def dast_rows() -> list[list[str]]:
         for alert in site.get("alerts") or []:
             risk_desc = str(alert.get("riskdesc", "UNKNOWN"))
             risk = risk_desc.split(" ", 1)[0].upper()
-            name = str(alert.get("name") or alert.get("alert") or "ZAP alert")
+            original_name = str(alert.get("name") or alert.get("alert") or "")
+            plugin_id = str(alert.get("pluginid") or alert.get("alertRef") or "?")
+            name = DAST_NAMES_RU.get(original_name, f"Срабатывание правила OWASP ZAP №{plugin_id}")
             instances = alert.get("instances") or []
             uri = instances[0].get("uri", site.get("@name", "?")) if instances else site.get("@name", "?")
 
             sensitive_medium = any(
-                token in name.lower()
+                token in original_name.lower()
                 for token in (
                     "cookie",
                     "content security policy",
@@ -118,16 +140,16 @@ def dast_rows() -> list[list[str]]:
             )
             if risk == "HIGH":
                 strategy = "Fix"
-                reason = "High-risk DAST signal on a reachable HTTP surface; validate and remediate."
+                reason = "Сигнал высокого риска на доступной HTTP-поверхности: проверить контекст и исправить."
             elif risk == "MEDIUM" and sensitive_medium:
                 strategy = "Fix"
-                reason = "Medium finding affects browser/session hardening; validate context and remediate."
+                reason = "Находка среднего риска влияет на защиту браузера или сессии: проверить и исправить."
             elif risk == "MEDIUM":
                 strategy = "Backlog"
-                reason = "Baseline finding requires contextual triage before becoming a release blocker."
+                reason = "Находка базового DAST-сканирования требует проверки контекста перед возможной блокировкой выпуска."
             else:
                 strategy = "Monitor"
-                reason = "Low/informational baseline signal; keep for hardening and monitoring."
+                reason = "Низкоприоритетный или информационный сигнал: оставить в плане усиления защиты и наблюдать."
 
             rows.append(
                 [
@@ -147,11 +169,11 @@ def main() -> int:
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 
     lines = [
-        "# Preliminary security triage",
+        "# Первичный разбор результатов безопасности",
         "",
-        "> Generated automatically from CI reports. This is a first-pass decision and does not replace human review.",
+        "> Сводка сформирована автоматически из отчётов текущего прогона. Это первое решение, а не замена ручной проверки специалистом.",
         "",
-        "| Source | Finding | Severity/Risk | Location/Target | Strategy | Rationale |",
+        "| Источник | Находка | Уровень / риск | Файл, компонент или адрес | Стратегия | Обоснование |",
         "|---|---|---|---|---|---|",
     ]
 
@@ -159,24 +181,24 @@ def main() -> int:
         for row in rows[:30]:
             lines.append("| " + " | ".join(row) + " |")
     else:
-        lines.append("| - | No findings parsed from reports | - | - | Monitor | Recheck scanner output and coverage. |")
+        lines.append("| - | Разобранных находок нет | - | - | Monitor | Проверить отчёты сканеров и охват анализа. |")
 
     lines.extend(
         [
             "",
-            "## Strategy meanings",
+            "## Значение стратегий",
             "",
-            "- **Fix** — remediate as soon as practical; blocking findings must be resolved before the gate passes.",
-            "- **Backlog** — schedule remediation after contextual validation.",
-            "- **Accept** — only by a documented, approved and time-bounded exception with compensating controls.",
-            "- **Monitor** — track vendor/runtime changes and reassess when new information appears.",
+            "- **Fix** — исправить; блокирующие проблемы должны быть устранены до прохождения контрольной точки.",
+            "- **Backlog** — запланировать исправление после проверки контекста.",
+            "- **Accept** — принять риск только через документированное, согласованное и ограниченное по сроку исключение с компенсирующими мерами.",
+            "- **Monitor** — наблюдать за изменениями и повторно оценивать риск при появлении новых данных.",
             "",
-            "The `Accept` strategy is intentionally not assigned automatically.",
+            "Стратегия `Accept` намеренно не назначается автоматически.",
         ]
     )
 
     OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Wrote {OUTPUT} with {len(rows)} parsed finding(s)")
+    print(f"Создан {OUTPUT}; разобрано находок: {len(rows)}")
     return 0
 
 

@@ -1,10 +1,10 @@
-"""Small safe example used by the green SAST scenario."""
+"""Небольшой безопасный пример для успешного SAST-прогона."""
 
 import sqlite3
 
 
 def get_user_data(user_id: int) -> list[tuple]:
-    """Return one user by id using a parameterized SQL query."""
+    """Возвращает пользователя по идентификатору с параметризованным SQL-запросом."""
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
@@ -12,7 +12,7 @@ def get_user_data(user_id: int) -> list[tuple]:
 
 
 def search_products(keyword: str) -> list[tuple]:
-    """Search products using a parameterized LIKE query."""
+    """Ищет товары по названию с помощью параметризованного LIKE-запроса."""
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
         cursor.execute(

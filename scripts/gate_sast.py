@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed policy gate for a Semgrep JSON report."""
+"""Контрольная точка SAST с блокировкой по принципу fail-closed."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from pathlib import Path
 
 def main() -> int:
     if len(sys.argv) != 3:
-        print("usage: gate_sast.py <report.json> <gate.log>", file=sys.stderr)
+        print("Использование: gate_sast.py <report.json> <gate.log>", file=sys.stderr)
         return 2
 
     report_path = Path(sys.argv[1])
@@ -26,14 +26,14 @@ def main() -> int:
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
     lines = [
-        f"timestamp_utc={datetime.now(timezone.utc).isoformat()}",
-        f"report={report_path}",
-        f"policy=block severities {','.join(sorted(blocking))}",
+        f"время_utc={datetime.now(timezone.utc).isoformat()}",
+        f"отчёт={report_path}",
+        f"политика=блокировать уровни {','.join(sorted(blocking))}",
     ]
 
     if not report_path.is_file():
-        lines.append("decision=BLOCK")
-        lines.append("reason=required SAST report is missing")
+        lines.append("решение=БЛОКИРОВАТЬ")
+        lines.append("причина=обязательный отчёт SAST отсутствует")
         log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print("\n".join(lines))
         return 2
@@ -41,8 +41,8 @@ def main() -> int:
     try:
         payload = json.loads(report_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        lines.append("decision=BLOCK")
-        lines.append(f"reason=invalid SAST report: {exc}")
+        lines.append("решение=БЛОКИРОВАТЬ")
+        lines.append(f"причина=отчёт SAST повреждён или не читается: {exc}")
         log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print("\n".join(lines))
         return 2
@@ -55,27 +55,33 @@ def main() -> int:
         if severity in blocking:
             blocked.append(finding)
 
-    lines.append(f"findings_total={len(results)}")
-    lines.append(f"findings_blocking={len(blocked)}")
+    lines.append(f"всего_находок={len(results)}")
+    lines.append(f"блокирующих_находок={len(blocked)}")
 
     for finding in blocked:
         extra = finding.get("extra") or {}
         start = finding.get("start") or {}
         lines.append(
-            "blocked_finding="
-            f"{finding.get('check_id', 'unknown')} "
-            f"{finding.get('path', 'unknown')}:{start.get('line', '?')} "
-            f"severity={extra.get('severity', 'unknown')} "
-            f"message={extra.get('message', '').replace(chr(10), ' ')}"
+            "блокирующая_находка="
+            f"{finding.get('check_id', 'неизвестно')} "
+            f"{finding.get('path', 'неизвестно')}:{start.get('line', '?')} "
+            f"уровень={extra.get('severity', 'неизвестно')} "
+            f"сообщение={extra.get('message', '').replace(chr(10), ' ')}"
         )
 
     if blocked:
-        lines.append("decision=BLOCK")
-        lines.append("next_action=Fix or formally approve a time-bounded exception, then rerun the pipeline.")
+        lines.append("решение=БЛОКИРОВАТЬ")
+        lines.append(
+            "следующее_действие=Исправить проблему либо оформить согласованное "
+            "ограниченное по сроку исключение, затем повторить запуск."
+        )
         exit_code = 1
     else:
-        lines.append("decision=PASS")
-        lines.append("next_action=Continue pipeline; non-blocking findings remain subject to triage.")
+        lines.append("решение=ПРОПУСТИТЬ")
+        lines.append(
+            "следующее_действие=Продолжить конвейер; неблокирующие находки при наличии "
+            "остаются предметом первичного разбора."
+        )
         exit_code = 0
 
     log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")

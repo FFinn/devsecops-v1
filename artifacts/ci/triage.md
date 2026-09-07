@@ -1,29 +1,29 @@
-# Preliminary security triage
+# Первичный разбор результатов безопасности
 
-> Generated automatically from CI reports. This is a first-pass decision and does not replace human review.
+> Сводка составлена по фактическим отчётам сохранённого успешного прогона. Это первое решение, а не замена ручной проверки специалистом.
 
-| Source | Finding | Severity/Risk | Location/Target | Strategy | Rationale |
+| Источник | Находка | Уровень / риск | Файл, компонент или адрес | Стратегия | Обоснование |
 |---|---|---|---|---|---|
-| DAST | Content Security Policy (CSP) Header Not Set | Medium (High) | https://preview.owasp-juice.shop/ | Fix | Medium finding affects browser/session hardening; validate context and remediate. |
-| DAST | Cross-Domain Misconfiguration | Medium (Medium) | https://preview.owasp-juice.shop/assets/public/favicon_js.ico | Backlog | Baseline finding requires contextual triage before becoming a release blocker. |
-| DAST | Cross-Origin-Embedder-Policy Header Missing or Invalid | Low (Medium) | https://preview.owasp-juice.shop/ | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Cross-Origin-Opener-Policy Header Missing or Invalid | Low (Medium) | https://preview.owasp-juice.shop/ | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Dangerous JS Functions | Low (Low) | https://preview.owasp-juice.shop/chunk-Bvta1DJp.js | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Deprecated Feature Policy Header Set | Low (Medium) | https://preview.owasp-juice.shop/ | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Permissions Policy Header Not Set | Low (Medium) | https://preview.owasp-juice.shop/ftp/package-lock.json.bak | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Server Leaks Version Information via "Server" HTTP Response Header Field | Low (High) | https://preview.owasp-juice.shop/ftp/coupons_2013.md.bak | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Strict-Transport-Security Header Not Set | Low (High) | https://preview.owasp-juice.shop/assets/public/favicon_js.ico | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Timestamp Disclosure - Unix | Low (Low) | https://preview.owasp-juice.shop/assets/public/favicon_js.ico | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Modern Web Application | Informational (Medium) | https://preview.owasp-juice.shop/ | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Re-examine Cache-control Directives | Informational (Low) | https://preview.owasp-juice.shop/ftp | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Storable and Cacheable Content | Informational (Medium) | https://preview.owasp-juice.shop/robots.txt | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
-| DAST | Storable but Non-Cacheable Content | Informational (Medium) | https://preview.owasp-juice.shop/ | Monitor | Low/informational baseline signal; keep for hardening and monitoring. |
+| DAST | Не задан заголовок Content-Security-Policy (CSP) | Medium (High) | https://preview.owasp-juice.shop/ | Fix | Находка среднего риска влияет на защиту браузера; нужно проверить контекст и настроить CSP. |
+| DAST | Ошибочная междоменная конфигурация | Medium (Medium) | https://preview.owasp-juice.shop/assets/public/favicon_js.ico | Backlog | Базовое DAST-сканирование требует проверки контекста перед возможной блокировкой выпуска. |
+| DAST | Заголовок Cross-Origin-Embedder-Policy отсутствует или задан неверно | Low (Medium) | https://preview.owasp-juice.shop/ | Monitor | Низкоприоритетный сигнал; оставить в плане усиления защиты и наблюдать. |
+| DAST | Заголовок Cross-Origin-Opener-Policy отсутствует или задан неверно | Low (Medium) | https://preview.owasp-juice.shop/ | Monitor | Низкоприоритетный сигнал; оставить в плане усиления защиты и наблюдать. |
+| DAST | Используются потенциально опасные функции JavaScript | Low (Low) | https://preview.owasp-juice.shop/chunk-Bvta1DJp.js | Monitor | Информационный сигнал; проверить при дальнейшем усилении защиты. |
+| DAST | Используется устаревший заголовок Feature-Policy | Low (Medium) | https://preview.owasp-juice.shop/ | Monitor | Низкоприоритетная конфигурационная находка. |
+| DAST | Не задан заголовок Permissions-Policy | Low (Medium) | https://preview.owasp-juice.shop/ftp/package-lock.json.bak | Monitor | Низкоприоритетная конфигурационная находка. |
+| DAST | Сервер раскрывает версию через HTTP-заголовок Server | Low (High) | https://preview.owasp-juice.shop/ftp/coupons_2013.md.bak | Monitor | Утечка технической информации сама по себе не является срочной причиной блокировки. |
+| DAST | Не задан заголовок Strict-Transport-Security | Low (High) | https://preview.owasp-juice.shop/assets/public/favicon_js.ico | Monitor | Находку нужно учесть при усилении настроек HTTPS. |
+| DAST | Раскрывается временная метка Unix | Low (Low) | https://preview.owasp-juice.shop/assets/public/favicon_js.ico | Monitor | Информационная находка низкого приоритета. |
+| DAST | Обнаружено современное веб-приложение | Informational (Medium) | https://preview.owasp-juice.shop/ | Monitor | Информационный сигнал, самостоятельного исправления не требует. |
+| DAST | Нужно проверить директивы Cache-Control | Informational (Low) | https://preview.owasp-juice.shop/ftp | Monitor | Проверить при плановом усилении настроек кэширования. |
+| DAST | Содержимое можно сохранять и кэшировать | Informational (Medium) | https://preview.owasp-juice.shop/robots.txt | Monitor | Проверить, соответствует ли кэширование назначению ресурса. |
+| DAST | Содержимое можно сохранять, но оно не кэшируется | Informational (Medium) | https://preview.owasp-juice.shop/ | Monitor | Информационный сигнал для проверки политики кэширования. |
 
-## Strategy meanings
+## Значение стратегий
 
-- **Fix** — remediate as soon as practical; blocking findings must be resolved before the gate passes.
-- **Backlog** — schedule remediation after contextual validation.
-- **Accept** — only by a documented, approved and time-bounded exception with compensating controls.
-- **Monitor** — track vendor/runtime changes and reassess when new information appears.
+- **Fix** — исправить; блокирующие проблемы должны быть устранены до прохождения контрольной точки.
+- **Backlog** — запланировать исправление после проверки контекста.
+- **Accept** — принять риск только через документированное, согласованное и ограниченное по сроку исключение с компенсирующими мерами.
+- **Monitor** — наблюдать за изменениями и повторно оценивать риск при появлении новых данных.
 
-The `Accept` strategy is intentionally not assigned automatically.
+Стратегия `Accept` намеренно не назначается автоматически.
