@@ -12,22 +12,27 @@
 
 | Что проверить | Где находится |
 |---|---|
-| Успешный прогон | `http://localhost:8081/root/devsecops-v1/-/pipelines/5` |
-| Заблокированный прогон | `http://localhost:8081/root/devsecops-v1/-/pipelines/6` |
+| Успешный прогон | `http://localhost:8081/root/devsecops-v1/-/pipelines/9` |
+| Заблокированный SAST-прогон | `http://localhost:8081/root/devsecops-v1/-/pipelines/10` |
+| Заблокированный SCA-прогон | `http://localhost:8081/root/devsecops-v1/-/pipelines/11` |
 | Цель DAST | `https://preview.owasp-juice.shop/` |
 | Отчёт SAST | `security-reports/sast-report.json` |
 | Отчёт SCA | `security-reports/sca-report.json` |
+| Отчёт SCA из заблокированного прогона | `security-reports/sca-report-red.json` |
 | SBOM | `security-reports/sbom.json` |
+| SBOM из заблокированного SCA-прогона | `security-reports/sbom-red-sca.json` |
 | Отчёт DAST в HTML | `security-reports/dast-report.html` |
 | Отчёт DAST в JSON | `security-reports/dast-report.json` |
 | Журнал контрольной точки SAST | `artifacts/ci/gate-sast.log` |
 | Журнал контрольной точки SCA | `artifacts/ci/gate-sca.log` |
 | Журнал политики DAST | `artifacts/ci/gate-dast.log` |
 | Журнал заблокированного SAST-прогона | `artifacts/ci/gate-sast-red.log` |
+| Журнал заблокированного SCA-прогона | `artifacts/ci/gate-sca-red.log` |
 | Первичный разбор SCA | `artifacts/ci/triage-sca.md` |
 | Общий первичный разбор | `artifacts/ci/triage.md` |
 | Исходный журнал OWASP ZAP | `artifacts/ci/zap-baseline-log.txt` |
-| Скриншот успешного прогона | `artifacts/screenshots/pipeline.png` |
+| Скриншот успешного прогона | `artifacts/screenshots/pipeline-green.png` |
+| Скриншот заблокированного прогона | `artifacts/screenshots/pipeline-red.png` |
 
 Локальные ссылки на GitLab открываются только на машине, где поднят учебный стенд. Поэтому перед сдачей я дополнительно сохраняю скриншоты успешного и заблокированного прогонов. Подробный порядок приведён в разделе 13.
 
@@ -185,7 +190,7 @@ artifacts/ci/zap-baseline-log.txt
 
 `gate_sca.py` формирует `artifacts/ci/triage-sca.md` непосредственно из отчёта Trivy. Для каждой CVE туда попадают компонент, установленная версия, исправленная версия, уровень важности, выбранная стратегия и краткое обоснование.
 
-В успешном сохранённом SCA-отчёте уязвимости отсутствуют. Чтобы показать преподавателю реальный SCA-разбор, перед сдачей нужно выполнить отдельный прогон `red-sca` и сохранить его `sca-report.json`, `gate-sca.log` и `triage-sca.md`.
+В успешном сохранённом SCA-отчёте уязвимости отсутствуют. Для проверки SCA-блокировки выполнен отдельный прогон `red-sca`: Trivy нашёл 10 известных уязвимостей в устаревших учебных зависимостях, из них 5 попали под блокирующий порог `HIGH`/`CRITICAL`. Его результаты сохранены в `security-reports/sca-report-red.json`, `security-reports/sbom-red-sca.json`, `artifacts/ci/gate-sca-red.log` и `artifacts/ci/triage-sca.md`.
 
 ### 8.3. DAST
 
@@ -270,21 +275,15 @@ local-gitlab/README.md
 
 Стенд нужен только для учебной работы и скриншотов. GitLab 18.1 уже не является актуальной веткой и не должен публиковаться в интернет.
 
-## 13. Что проверить перед сдачей
+## 13. Что проверено перед сдачей
 
-После получения этих изменений нужно заново выполнить локальные прогоны, потому что тексты журналов и первичного разбора теперь русифицированы.
+После русификации были заново выполнены три локальных прогона:
 
-1. Запустить `green` и убедиться, что конвейер завершился успешно.
-2. Запустить `red-sast` и убедиться, что `gate_sast` заблокировал конвейер.
-3. Запустить `red-sca`, чтобы получить фактические SCA-находки и `triage-sca.md`.
-4. Скачать артефакты новых прогонов и обновить файлы в `security-reports/` и `artifacts/ci/`.
-5. Сохранить скриншот успешного прогона как `artifacts/screenshots/pipeline-green.png`.
-6. Сохранить скриншот заблокированного прогона как `artifacts/screenshots/pipeline-red.png`.
-7. Обновить локальные ссылки на прогоны в разделе 1.
-8. Проверить, что в журнале красного SAST-прогона есть `решение=БЛОКИРОВАТЬ`.
-9. Проверить, что в SCA-разборе присутствует хотя бы одна фактическая CVE из прогона `red-sca`.
+1. `green` — прогон `#9`, завершился успешно.
+2. `red-sast` — прогон `#10`, заблокирован заданием `gate_sast`.
+3. `red-sca` — прогон `#11`, заблокирован заданием `gate_sca`.
 
-Текущий `artifacts/screenshots/pipeline.png` оставлен как подтверждение предыдущего успешного запуска. После новых прогонов его лучше заменить двумя отдельными скриншотами из пунктов 5 и 6.
+Артефакты новых прогонов скачаны и обновлены в `security-reports/` и `artifacts/ci/`. Скриншоты сохранены как `artifacts/screenshots/pipeline-green.png` и `artifacts/screenshots/pipeline-red.png`. В журнале красного SAST-прогона есть `решение=БЛОКИРОВАТЬ`, а в SCA-разборе присутствуют фактические CVE из прогона `red-sca`.
 
 ## 14. Используемые технологии
 

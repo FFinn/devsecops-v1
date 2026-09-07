@@ -3,17 +3,17 @@
   "Trivy": {
     "Version": "0.74.0"
   },
-  "ReportID": "01a07b4a-ccb9-7184-9998-121dd93ee5fb",
-  "CreatedAt": "2026-09-07T09:54:54.777101125Z",
-  "ArtifactID": "sha256:e6da2b371e41f0279a6f59034e72ad88a832ad3084fd482d176f1ed9152aec38",
+  "ReportID": "01a07b89-38c5-7011-9d92-13dee1bdb3cf",
+  "CreatedAt": "2026-09-07T11:03:05.66900688Z",
+  "ArtifactID": "sha256:4fd13c6618af1ba424aa223593c4ba7cc609f9e591e4994d1c7562ee5aebdfad",
   "ArtifactName": ".",
   "ArtifactType": "repository",
   "Metadata": {
     "RepoURL": "http://host.docker.internal:8081/root/devsecops-v1.git",
-    "Commit": "26f55abe50a80b0429a070779a8fb3262b6093b5",
-    "CommitMsg": "fix: run zap baseline via docker",
-    "Author": "Vafin Alexander \u003ca.vafin@avto.express\u003e",
-    "Committer": "Vafin Alexander \u003ca.vafin@avto.express\u003e"
+    "Commit": "f45360e9c4b8309b24b91de589d8cf273a64fef0",
+    "CommitMsg": "security: ограничить локальный GitLab и уточнить права GitLab Runner",
+    "Author": "FFinn \u003cFFinn@yandex.ru\u003e",
+    "Committer": "FFinn \u003cFFinn@yandex.ru\u003e"
   },
   "Results": [
     {

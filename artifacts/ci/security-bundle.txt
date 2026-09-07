@@ -1,7 +1,7 @@
 Набор результатов конвейера безопасности
-коммит=26f55abe50a80b0429a070779a8fb3262b6093b5
+коммит=f45360e9c4b8309b24b91de589d8cf273a64fef0
 ветка=main
-прогон=http://localhost:8081/root/devsecops-v1/-/pipelines/5
+прогон=http://localhost:8081/root/devsecops-v1/-/pipelines/9
 сценарий=green
 цель_dast=https://preview.owasp-juice.shop/
 
@@ -15,5 +15,6 @@ security-reports/sca-report.json
 
 Журналы контрольных точек:
 artifacts/ci/gate-dast.log
+artifacts/ci/gate-sast-red.log
 artifacts/ci/gate-sast.log
 artifacts/ci/gate-sca.log
