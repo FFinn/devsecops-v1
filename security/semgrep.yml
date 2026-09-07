@@ -1,0 +1,34 @@
+rules:
+  - id: python-sql-query-concat
+    languages:
+      - python
+    severity: ERROR
+    message: >-
+      Potential SQL injection: a SQL query is assembled with string
+      concatenation. Use a parameterized query.
+    metadata:
+      category: security
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+      technology:
+        - python
+        - sqlite
+    pattern-regex: >-
+      (?i)\bquery\s*=\s*["'][^"']*(select|insert|update|delete)[^"']*["']\s*\+\s*[A-Za-z_][A-Za-z0-9_]*
+
+  - id: python-sql-query-fstring
+    languages:
+      - python
+    severity: ERROR
+    message: >-
+      Potential SQL injection: a SQL query is assembled with an f-string.
+      Use a parameterized query.
+    metadata:
+      category: security
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+      technology:
+        - python
+        - sqlite
+    pattern-regex: >-
+      (?i)\bquery\s*=\s*f["'].*(select|insert|update|delete).*\{[A-Za-z_][A-Za-z0-9_]*\}.*["']

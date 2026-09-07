@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local runtime data
+*.db
+
+# Scanner caches / temporary demo input
+.trivycache/
+.sca-demo/
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Local GitLab runner runtime config contains a runner token.
+local-gitlab/runner-config/config.toml
