@@ -185,7 +185,6 @@ dast_zap_baseline:
   retry:
     max: 1
   script:
-    - zap-baseline.py --help >/dev/null
     - |
       set +e
       zap-baseline.py \
