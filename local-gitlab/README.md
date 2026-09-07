@@ -106,8 +106,12 @@ executor = "docker"
 
 [runners.docker]
   image = "alpine:3.22"
-  volumes = ["/cache"]
+  volumes = ["/cache", "/var/run/docker.sock:/var/run/docker.sock", "/builds:/builds"]
 ```
+
+`/var/run/docker.sock` нужен job `dast_zap_baseline`: он запускает официальный
+контейнер ZAP с mount `/zap/wrk`. `/builds:/builds` нужен, чтобы sibling
+контейнер ZAP видел тот же checkout проекта, что и GitLab job.
 
 Перезапустите runner:
 

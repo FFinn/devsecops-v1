@@ -176,65 +176,56 @@ deploy_test:
 dast_zap_baseline:
   extends: .dast_context_rules
   stage: security
-  image:
-    name: ghcr.io/zaproxy/zaproxy:stable
-    entrypoint: [""]
+  image: docker:29-cli
   needs:
     - deploy_test
   timeout: 15m
   retry:
     max: 1
   script:
+    - docker version
     - |
       set +e
-      zap-baseline.py \
+      docker run \
+        --rm \
+        -v "$CI_PROJECT_DIR:/zap/wrk/:rw" \
+        ghcr.io/zaproxy/zaproxy:stable \
+        zap-baseline.py \
         -t "$DAST_TARGET" \
-        -r dast-report.html \
-        -J dast-report.json \
+        -r security-reports/dast-report.html \
+        -J security-reports/dast-report.json \
         -I \
-        > "$CI_PROJECT_DIR/artifacts/ci/zap-baseline-log.txt" 2>&1
+        > artifacts/ci/zap-baseline-log.txt 2>&1
       ZAP_EXIT=$?
       set -e
 
-      cat "$CI_PROJECT_DIR/artifacts/ci/zap-baseline-log.txt"
-
-      if [ -f /zap/wrk/dast-report.html ]; then
-        cp /zap/wrk/dast-report.html "$CI_PROJECT_DIR/security-reports/dast-report.html"
-      elif [ -f dast-report.html ]; then
-        cp dast-report.html "$CI_PROJECT_DIR/security-reports/dast-report.html"
-      fi
-
-      if [ -f /zap/wrk/dast-report.json ]; then
-        cp /zap/wrk/dast-report.json "$CI_PROJECT_DIR/security-reports/dast-report.json"
-      elif [ -f dast-report.json ]; then
-        cp dast-report.json "$CI_PROJECT_DIR/security-reports/dast-report.json"
-      fi
+      cat artifacts/ci/zap-baseline-log.txt
 
       {
         echo "policy=ZAP baseline findings are triaged; WARN findings are non-blocking"
         echo "blocking=explicit ZAP FAIL result, scanner execution failure, or missing required report"
         echo "zap_exit_code=$ZAP_EXIT"
-      } > "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
+      } > artifacts/ci/gate-dast.log
 
-      if [ ! -s "$CI_PROJECT_DIR/security-reports/dast-report.html" ]; then
-        echo "decision=BLOCK" >> "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
-        echo "reason=required DAST HTML report is missing" >> "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
+      if [ ! -s security-reports/dast-report.html ]; then
+        echo "decision=BLOCK" >> artifacts/ci/gate-dast.log
+        echo "reason=required DAST HTML report is missing" >> artifacts/ci/gate-dast.log
         exit 3
       fi
 
       case "$ZAP_EXIT" in
         0|2)
-          echo "decision=PASS_TO_TRIAGE" >> "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
+          echo "decision=PASS_TO_TRIAGE" >> artifacts/ci/gate-dast.log
           exit 0
           ;;
         1)
-          echo "decision=BLOCK" >> "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
-          echo "reason=at least one ZAP rule is explicitly configured as FAIL" >> "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
+          echo "decision=BLOCK" >> artifacts/ci/gate-dast.log
+          echo "reason=at least one ZAP rule is explicitly configured as FAIL" >> artifacts/ci/gate-dast.log
           exit 1
           ;;
         *)
-          echo "decision=BLOCK" >> "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
-          echo "reason=ZAP execution failure" >> "$CI_PROJECT_DIR/artifacts/ci/gate-dast.log"
+          echo "decision=BLOCK" >> artifacts/ci/gate-dast.log
+          echo "reason=ZAP execution failure" >> artifacts/ci/gate-dast.log
           exit "$ZAP_EXIT"
           ;;
       esac
